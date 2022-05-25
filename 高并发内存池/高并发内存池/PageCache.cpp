@@ -64,6 +64,8 @@ Span* PageCache::NewSpan(size_t i) {
 }
 
 Span* PageCache::ObjectToSpan(void* ptr) {
+
+	//std::lock_guard<std::recursive_mutex> lock(_mtx);
 	PageId i = (ADDRES)ptr >> PAGESHIFT;
 	/*auto it = idSpanMap.find(i);
 	if (it != idSpanMap.end()) {
@@ -124,8 +126,7 @@ void PageCache::ReleaseSpanToPageCache(Span* span) {
 		// 超过128页，不需要合并
 		if (prespan->pagenum + span->pagenum >= NPAGES)
 		{
-			//break;
-			return;
+			break;
 		}
 
 
@@ -135,7 +136,7 @@ void PageCache::ReleaseSpanToPageCache(Span* span) {
 		span->startID = prespan->startID;
 		span->pagenum += prespan->pagenum;
 		//最关键的，将前一个span中页和span映射关系更改，与当前span映射起来
-		for (size_t i = 0; i < prespan->pagenum; ++i) {
+		for (PageId i = 0; i < prespan->pagenum; ++i) {
 			idSpanMap[prespan->startID + i] = span;
 		}
 		delete prespan;
@@ -167,10 +168,11 @@ void PageCache::ReleaseSpanToPageCache(Span* span) {
 		{
 			break;
 		}
+
 		spanlist[nextspan->pagenum].Erase(nextspan);
 		//开始合并
 		span->pagenum += nextspan->pagenum;
-		for (size_t i = 0; i < nextspan->pagenum; ++i) {
+		for (PageId i = 0; i < nextspan->pagenum; ++i) {
 			idSpanMap[nextspan->startID + i] = span;
 		}
 		delete nextspan;	

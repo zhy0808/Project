@@ -120,8 +120,8 @@ class FreeList {
 public:
 	//将还回来的内存块头插进freelist链表中
 	void Push(void* obj) {
-		head = obj;
 		NextObj(obj) = head;
+		head = obj;
 		size++;
 
 	}
@@ -196,7 +196,7 @@ public:
 		return head->next;
 	}
 	Span* End() {
-		return head->prev;
+		return head;
 	}
 	void Push(Span* newspan) {
 		newspan->next = head->next;
